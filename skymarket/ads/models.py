@@ -8,6 +8,7 @@ class Ad(models.Model):
     description = models.CharField(max_length=1000, blank=True, null=False)
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='avatars/', null=True)
 
     class Meta:
         verbose_name = "Объявление"
