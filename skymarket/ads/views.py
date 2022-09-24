@@ -1,4 +1,5 @@
 from rest_framework import pagination, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Ad, Comment
@@ -49,6 +50,18 @@ class AdViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(methods=['GET'], detail=False, url_path='me', url_name='me', serializer_class=AdListSerializer)
+    def me_ads(self, request, *args, **kwargs):
+        ads = Ad.objects.filter(author=self.request.user)
+
+        page = self.paginate_queryset(ads)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(ads, many=True)
+        return Response(serializer.data)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

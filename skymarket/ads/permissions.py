@@ -10,7 +10,7 @@ class AdPermission(permissions.BasePermission):
         # if view.action in ['list']:
         #     return True
 
-        if view.action in ['create']:
+        if view.action in ['create', 'me']:
             return request.user.is_authenticated
         else:
             return True
