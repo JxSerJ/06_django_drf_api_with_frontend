@@ -20,4 +20,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", ":8000", "skymarket.wsgi:application"]
+CMD ["gunicorn", "skymarket.wsgi:application", "--bind", "0.0.0.0:8000", "--log-level", "info", "--workers", "4"]
