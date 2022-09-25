@@ -1,0 +1,6 @@
+310_venv
+frontend_react
+market_postgres/frontend
+.dockerignore
+.git
+.idea

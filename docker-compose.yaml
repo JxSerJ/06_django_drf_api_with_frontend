@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - ./market_postgres/postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGPORT: ${DB_PORT}
+    restart: always
+    ports:
+    - "${DB_PORT}:${DB_PORT}"
+#    networks:
+#      - db_net
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  migrations:
+    build: ./skymarket/.
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "ls -la && python manage.py migrate && python manage.py loadall"
+#    networks:
+#      - db_net
+
+
+  backend:
+    build: ./skymarket/.
+    env_file:
+      - .env
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+#    networks:
+#      - project_net
+#      - db_net
+
+
+  frontend_build:
+    build: ./frontend_react/.
+    volumes:
+      - frontend:/app/build
+    depends_on:
+      - db
+      - backend
+#    networks:
+#      - project_net
+
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8000:8000"
+      - "3000:3000"
+    volumes:
+      - ./skymarket/django_static/:/usr/share/nginx/html/django_static/
+      - ./skymarket/django_media/:/usr/share/nginx/html/django_media/
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - frontend:/usr/share/nginx/html/
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      frontend_build:
+        condition: service_completed_successfully
+      backend:
+        condition: service_started
+#    networks:
+#      - project_net
+
+volumes:
+  postgres_data:
+  frontend:
+
+#networks:
+#  project_net:
+#    driver: bridge
+#  db_net:
+#    driver: bridge

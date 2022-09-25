@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install -g npm
 RUN apk add --update python3 make g++ && rm -rf /var/cache/apk/*
-RUN npm i
+RUN echo "PLEASE WAIT! Downloading and installing deps. This can take at least 120 seconds" && npm i -ddd
 COPY . ./
 RUN ls -la
 CMD npm run build
